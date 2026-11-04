@@ -154,6 +154,12 @@ atmosphere_background_ensemble_path: ./ens/mem%mem%
 
 # Default background time is for 3D applications
 atmosphere_background_time_iso: "{{ current_cycle | to_isotime }}"
+{% if (JEDI_ATMVAR_ALGO | default('3dvar', true)) == '4denvar' %}
+# 4DEnVar: subwindow and begin/end background times (only rendered for 4denvar)
+window_subwindow: "{{ ATMVAR_SUBWINDOW | default('PT3H', true) }}"
+atmosphere_background_time_iso_begin: "{{ WINDOW_BEGIN | to_isotime }}"
+atmosphere_background_time_iso_end: "{{ current_cycle | add_to_datetime('3H' | to_timedelta) | to_isotime }}"
+{% endif %}
 
 # Background error
 atmosphere_bump_data_directory: "{{ DATA }}/berror"

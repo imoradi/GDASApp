@@ -1,0 +1,13 @@
+states:
+{% for _fh, _dt in [('003', atmosphere_background_time_iso_begin), ('006', atmosphere_background_time_iso), ('009', atmosphere_background_time_iso_end)] %}
+- datapath: {{ atmosphere_background_path }}
+  filetype: cube sphere history
+  provider: ufs
+  datetime: "{{ _dt }}"
+  filenames:
+  - {{ atmosphere_variational_history_prefix }}cubed_sphere_grid_atmf{{ _fh }}.nc
+  - {{ atmosphere_variational_history_prefix }}cubed_sphere_grid_sfcf{{ _fh }}.nc
+  max allowable geometry difference: 1e-4
+  state variables: {{ atmosphere_det_state_variables }}
+  field io names: {{ atmosphere_background_field_io_names }}
+{% endfor %}
