@@ -217,6 +217,9 @@ atmosphere_obsbiascovout_prefix: "{{APREFIX}}"
 atmosphere_obsbiascovout_suffix: ".bias_cov.nc"
 # Aircraft VarBC uses the same file names as the radiance VarBC
 atmosphere_obsbiasin_acft_suffix: ".bias.nc"
+# Aircraft VarBC by tail number needs aircraft records on every MPI task; with sparse
+# aircraft data (non-restricted prepbufr) use one global set of coefficients
+aircraft_bc_by_record: false
 
 bias_files_dict:
     radiance_atms_n20: varbc_params.tar

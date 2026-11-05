@@ -61,7 +61,7 @@
     input file: "{{atmosphere_obsbiasin_path}}/{{atmosphere_obsbiasin_prefix}}{{observation_from_jcb}}{{atmosphere_obsbiasin_acft_suffix}}"
     output file: "{{atmosphere_obsbiasout_path}}/{{atmosphere_obsbiasout_prefix}}{{observation_from_jcb}}{{atmosphere_obsbiasout_suffix}}"
     variables without bc: [specificHumidity, windEastward, windNorthward]
-    bc by record: true
+    bc by record: {{ aircraft_bc_by_record }}
     variational bc:
       predictors:
       - name: constant
