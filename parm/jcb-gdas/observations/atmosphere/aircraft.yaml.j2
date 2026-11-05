@@ -59,6 +59,7 @@
   # -----------------------------------
   obs bias:
     input file: "{{atmosphere_obsbiasin_path}}/{{atmosphere_obsbiasin_prefix}}{{observation_from_jcb}}{{atmosphere_obsbiasin_acft_suffix}}"
+    output file: "{{atmosphere_obsbiasout_path}}/{{atmosphere_obsbiasout_prefix}}{{observation_from_jcb}}{{atmosphere_obsbiasout_suffix}}"
     variables without bc: [specificHumidity, windEastward, windNorthward]
     bc by record: true
     variational bc:
@@ -75,10 +76,11 @@
       step size: 1.0e-4
       largest analysis variance: 10000.0
       prior:
-        input file: "{{atmosphere_obsbiasin_path}}/{{atmosphere_obsbiasin_prefix}}{{observation_from_jcb}}{{atmosphere_obsbiasin_acft_suffix}}"
+        input file: "{{atmosphere_obsbiasin_path}}/{{atmosphere_obsbiascovin_prefix}}{{observation_from_jcb}}{{atmosphere_obsbiascovin_suffix}}"
         inflation:
           ratio: 1.1
           ratio for small dataset: 2.0
+      output file: "{{atmosphere_obsbiasout_path}}/{{atmosphere_obsbiascovout_prefix}}{{observation_from_jcb}}{{atmosphere_obsbiascovout_suffix}}"
 
 
   obs pre filters:

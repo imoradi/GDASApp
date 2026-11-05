@@ -215,6 +215,8 @@ atmosphere_obsbiasout_prefix: "{{APREFIX}}"
 atmosphere_obsbiasout_suffix: ".bias.nc"
 atmosphere_obsbiascovout_prefix: "{{APREFIX}}"
 atmosphere_obsbiascovout_suffix: ".bias_cov.nc"
+# Aircraft VarBC uses the same file names as the radiance VarBC
+atmosphere_obsbiasin_acft_suffix: ".bias.nc"
 
 bias_files_dict:
     radiance_atms_n20: varbc_params.tar
@@ -226,6 +228,7 @@ bias_files_dict:
     radiance_ssmis_f18: varbc_params.tar
     radiance_cris-fsr_n20: varbc_params.tar
     radiance_cris-fsr_npp: varbc_params.tar
+    aircraft: varbc_params.tar
 
 # Local Ensemble DA (LETKF)
 # -------------------------
