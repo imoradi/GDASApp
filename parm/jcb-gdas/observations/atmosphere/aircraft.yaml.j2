@@ -525,7 +525,9 @@
   # ---------------------------------------------------------
   - filter: Variable Transforms
     Transform: SurfaceWindScalingPressure
-    SkipWhenNoObs: True
+    # The transform writes an empty field when a task has no aircraft obs; skipping it leaves
+    # the field the wind operator needs undefined on that task (sparse aircraft data)
+    SkipWhenNoObs: False
 
 
   # Error inflation based on pressure check
