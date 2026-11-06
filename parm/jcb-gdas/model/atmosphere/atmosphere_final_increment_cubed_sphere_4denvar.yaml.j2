@@ -1,14 +1,10 @@
-output:
-  state component:
-    states:
-{% for _tag, _dt in [('.f003', atmosphere_background_time_iso_begin), ('', atmosphere_background_time_iso), ('.f009', atmosphere_background_time_iso_end)] %}
-    - datetime: "{{ _dt }}"
-      filetype: cube sphere history
-      filename: ./anl/cubed_sphere_grid_atminc.jedi{{ _tag }}.nc
-      provider: ufs
-      fields to write: {{ atmosphere_det_increment_variables }}
-      field io names: {{ atmosphere_increment_field_io_names }}
-{% endfor %}
+# 4DEnVar: the increment writer runs over the subwindow states; write the center (analysis) time only
+times: ["{{ atmosphere_background_time_iso }}"]
+filetype: cube sphere history
+filename: ./anl/cubed_sphere_grid_atminc.jedi.nc
+provider: ufs
+fields to write: {{ atmosphere_det_increment_variables }}
+field io names: {{ atmosphere_increment_field_io_names }}
 geometry:
   fms initialization:
     namelist filename: "{{atmosphere_fv3jedi_files_path}}/fmsmpp.nml"
