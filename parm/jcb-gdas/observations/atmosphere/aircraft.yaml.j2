@@ -57,6 +57,7 @@
 
   # Observation Bias Correction (VarBC)
   # -----------------------------------
+{% if aircraft_varbc | default(true) %}
   obs bias:
     input file: "{{atmosphere_obsbiasin_path}}/{{atmosphere_obsbiasin_prefix}}{{observation_from_jcb}}{{atmosphere_obsbiasin_acft_suffix}}"
     output file: "{{atmosphere_obsbiasout_path}}/{{atmosphere_obsbiasout_prefix}}{{observation_from_jcb}}{{atmosphere_obsbiasout_suffix}}"
@@ -81,7 +82,7 @@
           ratio: 1.1
           ratio for small dataset: 2.0
       output file: "{{atmosphere_obsbiasout_path}}/{{atmosphere_obsbiascovout_prefix}}{{observation_from_jcb}}{{atmosphere_obsbiascovout_suffix}}"
-
+{% endif %}
 
   obs pre filters:
 
