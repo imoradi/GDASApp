@@ -220,6 +220,9 @@ atmosphere_obsbiasin_acft_suffix: ".bias.nc"
 # Aircraft VarBC by tail number needs aircraft records on every MPI task; with sparse
 # aircraft data (non-restricted prepbufr) use one global set of coefficients
 aircraft_bc_by_record: false
+# The ObsBias writer in this UFO drops non-channel variables (written aircraft bias files have
+# no Variables), so aircraft VarBC cannot cycle; assimilate aircraft without bias correction
+aircraft_varbc: false
 
 bias_files_dict:
     radiance_atms_n20: varbc_params.tar
