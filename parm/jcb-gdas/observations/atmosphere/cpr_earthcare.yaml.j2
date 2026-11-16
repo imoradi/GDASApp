@@ -1,0 +1,250 @@
+# EarthCARE CPR attenuated reflectivity (15 km along-track averages, linear Z in cm6/m3).
+# Obs files: <RUN>.t<HH>z.cpr_earthcare.nc in IODADIR (converter drops bins < 500 m AGL; -30..22 dBZ;
+# measured no-echo bins 1-10 km AGL = 0). QC: censoring at -30 dBZ, 5 dB obs error, |O-B| > 12.5 dB check.
+# CRTM: Sensor_ID cpr_earthcare (CloudSat coefficients relabeled), DDA CloudCoeff (Thompson PSD), linear absorbers [H2O].
+-
+  obs space:
+    name: {{observation_from_jcb}}
+    obsdatain:
+      engine:
+        type: H5File
+        obsfile: "{{atmosphere_obsdatain_path}}/{{atmosphere_obsdatain_prefix}}{{observation_from_jcb}}{{atmosphere_obsdatain_suffix}}"
+        missing file action: warn
+      obsgrouping:
+        group variables: ["sequenceNumber"]
+        sort variable: "Layer"
+        sort order: "descending"
+    extension:
+      allocate companion records with length: 127
+    obsdataout:
+      engine:
+        type: H5File
+        obsfile: "{{atmosphere_obsdataout_path}}/{{atmosphere_obsdataout_prefix}}{{observation_from_jcb}}{{atmosphere_obsdataout_suffix}}"
+    simulated variables:
+    - ReflectivityAttenuated
+    channels: 1
+  obs operator:
+    name: CRTM
+    Absorbers: [H2O, O3, CO2]
+    Clouds: [LiquidSphere, IceSphere, Rain, LargeColumnAggregate]
+    Cloud_Fraction: 1.0
+    obs options:
+      Sensor_ID: cpr_earthcare
+      EndianType: little_endian
+      CoefficientPath: "/scratch4/HFIP/hfv3gfs/save/Isaac.Moradi/jedi_work/fix/crtm_cpr/"
+      CloudCoeff_File: CloudCoeff_DDA_Moradi_2025_670GHz_Thompson2008PSD.nc4
+      CloudCoeff_Format: netCDF
+      Cloud_Model: CRTM
+      AerosolCoeff_File: AerosolCoeff.nc4
+      AerosolCoeff_Format: netCDF
+      Aerosol_Model: CRTM
+      ReflectivityUnit: cm6/m3
+  linear obs operator:
+    Absorbers: [H2O]
+    Clouds: [LiquidSphere, IceSphere, Rain, LargeColumnAggregate]
+  obs prior filters:
+  - filter: Variable Assignment
+    assignments:
+    - name: MetaData/latitude
+      type: float
+      function:
+        name: ObsFunction/FillAveragedProfileData
+        options: {variable to copy: MetaData/latitude, observation vertical coordinate: MetaData/height, model vertical coordinate: air_pressure_levels}
+    - name: MetaData/longitude
+      type: float
+      function:
+        name: ObsFunction/FillAveragedProfileData
+        options: {variable to copy: MetaData/longitude, observation vertical coordinate: MetaData/height, model vertical coordinate: air_pressure_levels}
+    - name: MetaData/sensorScanPosition
+      type: int
+      function:
+        name: IntObsFunction/FillAveragedProfileData
+        options: {variable to copy: MetaData/sensorScanPosition, observation vertical coordinate: MetaData/height, model vertical coordinate: air_pressure_levels}
+    - name: MetaData/sensorViewAngle
+      type: float
+      function:
+        name: ObsFunction/FillAveragedProfileData
+        options: {variable to copy: MetaData/sensorViewAngle, observation vertical coordinate: MetaData/height, model vertical coordinate: air_pressure_levels}
+    - name: MetaData/sensorZenithAngle
+      type: float
+      function:
+        name: ObsFunction/FillAveragedProfileData
+        options: {variable to copy: MetaData/sensorZenithAngle, observation vertical coordinate: MetaData/height, model vertical coordinate: air_pressure_levels}
+  - filter: Domain Check
+    where:
+    - variable: {name: MetaData/sensorViewAngle}
+      minvalue: 0.0
+      maxvalue: 20.0
+    - variable: {name: MetaData/latitude}
+      minvalue: -90.0
+      maxvalue: 90.0
+    - variable: {name: MetaData/height}
+      minvalue: 0.0
+      maxvalue: 20000.0
+  - filter: Bounds Check
+    filter variables:
+    - name: ObsValue/ReflectivityAttenuated
+      channels: 1
+    minvalue: 0.0
+    maxvalue: 1.585e-4
+  - filter: Variable Assignment
+    assignments:
+    - name: DerivedObsValue/ReflectivityAttenuated
+      channels: 1
+      type: float
+      function:
+        name: ObsFunction/Arithmetic
+        channels: 1
+        options:
+          variables:
+          - name: ObsValue/ReflectivityAttenuated
+            channels: 1
+          coefs: [1.0]
+  - filter: Average Observations To GeoVals Model Levels
+    filter variables:
+    - name: ReflectivityAttenuated
+      channels: 1
+    observation vertical coordinate: MetaData/height
+    model vertical coordinate: GeoVaLs/geopotential_height_levels
+  - filter: Bounds Check
+    filter variables:
+    - name: DerivedObsValue/ReflectivityAttenuated
+      channels: 1
+    minvalue: 0.0
+    maxvalue: 1.585e-4
+  - filter: Variable Assignment
+    where:
+    - variable:
+        name: DerivedObsValue/ReflectivityAttenuated
+        channels: 1
+      maxvalue: 1.0e-9
+    assignments:
+    - name: DerivedObsValue/ReflectivityAttenuated
+      channels: 1
+      type: float
+      value: 0.0
+  obs post filters:
+  - filter: Variable Transforms
+    Transform: ReflectivityUnitConvert
+    transform variable:
+      name: DerivedObsValue/ReflectivityAttenuated
+      channels: 1
+    input_unit: cm6/m3
+    output_unit: dBZ
+    output variable:
+      name: ReflectivityAttenuated_dBZ
+      channels: 1
+  - filter: Variable Transforms
+    Transform: ReflectivityUnitConvert
+    transform variable:
+      name: HofX/ReflectivityAttenuated
+      channels: 1
+    input_unit: cm6/m3
+    output_unit: dBZ
+    output variable:
+      name: HofX_ReflectivityAttenuated_dBZ
+      channels: 1
+  - filter: Variable Assignment
+    assignments:
+    - name: DerivedVariables/ObsMinusHofX_dBZ
+      channels: 1
+      type: float
+      function:
+        name: ObsFunction/Arithmetic
+        channels: 1
+        options:
+          variables:
+          - name: DerivedObsValue/ReflectivityAttenuated_dBZ
+            channels: 1
+          - name: DerivedObsValue/HofX_ReflectivityAttenuated_dBZ
+            channels: 1
+          coefs: [1.0, -1.0]
+  - filter: Perform Action
+    filter variables:
+    - name: DerivedObsValue/ReflectivityAttenuated
+      channels: 1
+    action:
+      name: assign error
+      error function:
+        name: ObsFunction/Arithmetic
+        channels: 1
+        options:
+          variables:
+          - name: DerivedObsValue/ReflectivityAttenuated
+            channels: 1
+          - name: HofX/ReflectivityAttenuated
+            channels: 1
+          coefs: [0.576, 0.576]
+          intercept: 1.0e-9
+  - filter: Perform Action
+    filter variables:
+    - name: ReflectivityAttenuated
+      channels: 1
+    where:
+    - variable:
+        name: DerivedObsValue/ReflectivityAttenuated
+        channels: 1
+      maxvalue: 0.0
+    - variable:
+        name: HofX/ReflectivityAttenuated
+        channels: 1
+      maxvalue: 1.0e-9
+    action:
+      name: passivate
+  - filter: Perform Action
+    filter variables:
+    - name: ReflectivityAttenuated
+      channels: 1
+    where:
+    - variable:
+        name: DerivedObsValue/ReflectivityAttenuated
+        channels: 1
+      minvalue: 1.0e-9
+    - variable:
+        name: HofX/ReflectivityAttenuated
+        channels: 1
+      minvalue: 1.0e-9
+    - variable:
+        name: DerivedVariables/ObsMinusHofX_dBZ
+        channels: 1
+      minvalue: 12.5
+    action:
+      name: passivate
+  - filter: Perform Action
+    filter variables:
+    - name: ReflectivityAttenuated
+      channels: 1
+    where:
+    - variable:
+        name: DerivedObsValue/ReflectivityAttenuated
+        channels: 1
+      minvalue: 1.0e-9
+    - variable:
+        name: HofX/ReflectivityAttenuated
+        channels: 1
+      minvalue: 1.0e-9
+    - variable:
+        name: DerivedVariables/ObsMinusHofX_dBZ
+        channels: 1
+      maxvalue: -12.5
+    action:
+      name: passivate
+  - filter: Perform Action
+    filter variables:
+    - name: ReflectivityAttenuated
+      channels: 1
+    where:
+    - variable:
+        name: HofX/ReflectivityAttenuated
+        channels: 1
+      minvalue: 1.585e-4
+    action:
+      name: passivate
+
+  # ------------------------------------------------------------------
+  # CPR BIAS CORRECTION: PLACEHOLDER - NOT SET
+  # No bias correction is applied. Before the first cycle, refit the CPR
+  # bias from control (jedi_4denvar_c768) cycles >= 2026051300 with
+  # jedi_work/cpr_bias and put the coefficients here. Do not use the
+  # provisional (May 1-2) fit.
+  # ------------------------------------------------------------------
