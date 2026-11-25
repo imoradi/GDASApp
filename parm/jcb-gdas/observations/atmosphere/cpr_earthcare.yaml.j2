@@ -1,7 +1,9 @@
 # EarthCARE CPR attenuated reflectivity (15 km along-track averages, linear Z in cm6/m3).
 # Obs files: <RUN>.t<HH>z.cpr_earthcare.nc in IODADIR (converter drops bins < 500 m AGL; -30..22 dBZ;
-# measured no-echo bins 1-10 km AGL = 0). QC: censoring at -30 dBZ, 5 dB obs error, |O-B| > 12.5 dB check.
-# CRTM: Sensor_ID cpr_earthcare (CloudSat coefficients relabeled), DDA CloudCoeff (Thompson PSD), linear absorbers [H2O].
+# measured no-echo bins 1-10 km AGL = 0). QC: censoring at -30 dBZ, 5 dB obs error, |O-B| > 12.5 dB check,
+# test3 (6 dB) checks; every post filter applied at iterations 0,1,2.
+# Operator: ASRT (C++ radar operator, ufo feature/asrt e140639d5; needs build gdas.cd/build_crtm_asrt).
+# Sensor_ID cpr_earthcare (94.05 GHz), DDA CloudCoeff LUT (Thompson PSD), linear absorbers [H2O].
 -
   obs space:
     name: {{observation_from_jcb}}
@@ -24,20 +26,12 @@
     - ReflectivityAttenuated
     channels: 1
   obs operator:
-    name: CRTM
-    Absorbers: [H2O, O3, CO2]
+    name: ASRT
     Clouds: [LiquidSphere, IceSphere, Rain, LargeColumnAggregate]
-    Cloud_Fraction: 1.0
     obs options:
       Sensor_ID: cpr_earthcare
-      EndianType: little_endian
       CoefficientPath: "/scratch4/HFIP/hfv3gfs/save/Isaac.Moradi/jedi_work/fix/crtm_cpr/"
       CloudCoeff_File: CloudCoeff_DDA_Moradi_2025_670GHz_Thompson2008PSD.nc4
-      CloudCoeff_Format: netCDF
-      Cloud_Model: CRTM
-      AerosolCoeff_File: AerosolCoeff.nc4
-      AerosolCoeff_Format: netCDF
-      Aerosol_Model: CRTM
       ReflectivityUnit: cm6/m3
   linear obs operator:
     Absorbers: [H2O]
@@ -125,6 +119,7 @@
       value: 0.0
   obs post filters:
   - filter: Variable Transforms
+    apply at iterations: 0,1,2
     Transform: ReflectivityUnitConvert
     transform variable:
       name: DerivedObsValue/ReflectivityAttenuated
@@ -135,6 +130,7 @@
       name: ReflectivityAttenuated_dBZ
       channels: 1
   - filter: Variable Transforms
+    apply at iterations: 0,1,2
     Transform: ReflectivityUnitConvert
     transform variable:
       name: HofX/ReflectivityAttenuated
@@ -145,6 +141,7 @@
       name: HofX_ReflectivityAttenuated_dBZ
       channels: 1
   - filter: Variable Assignment
+    apply at iterations: 0,1,2
     assignments:
     - name: DerivedVariables/ObsMinusHofX_dBZ
       channels: 1
@@ -160,6 +157,7 @@
             channels: 1
           coefs: [1.0, -1.0]
   - filter: Perform Action
+    apply at iterations: 0,1,2
     filter variables:
     - name: DerivedObsValue/ReflectivityAttenuated
       channels: 1
@@ -177,6 +175,7 @@
           coefs: [0.576, 0.576]
           intercept: 1.0e-9
   - filter: Perform Action
+    apply at iterations: 0,1,2
     filter variables:
     - name: ReflectivityAttenuated
       channels: 1
@@ -192,6 +191,7 @@
     action:
       name: passivate
   - filter: Perform Action
+    apply at iterations: 0,1,2
     filter variables:
     - name: ReflectivityAttenuated
       channels: 1
@@ -211,6 +211,7 @@
     action:
       name: passivate
   - filter: Perform Action
+    apply at iterations: 0,1,2
     filter variables:
     - name: ReflectivityAttenuated
       channels: 1
@@ -230,6 +231,7 @@
     action:
       name: passivate
   - filter: Perform Action
+    apply at iterations: 0,1,2
     filter variables:
     - name: ReflectivityAttenuated
       channels: 1
@@ -238,6 +240,62 @@
         name: HofX/ReflectivityAttenuated
         channels: 1
       minvalue: 1.585e-4
+    action:
+      name: passivate
+  - filter: Perform Action
+    apply at iterations: 0,1,2
+    filter variables:
+    - name: ReflectivityAttenuated
+      channels: 1
+    where:
+    - variable:
+        name: DerivedObsValue/ReflectivityAttenuated
+        channels: 1
+      maxvalue: 0.0
+    - variable:
+        name: HofX/ReflectivityAttenuated
+        channels: 1
+      minvalue: 3.981e-9
+    action:
+      name: passivate
+  - filter: Perform Action
+    apply at iterations: 0,1,2
+    filter variables:
+    - name: ReflectivityAttenuated
+      channels: 1
+    where:
+    - variable:
+        name: DerivedObsValue/ReflectivityAttenuated
+        channels: 1
+      minvalue: 3.981e-9
+    - variable:
+        name: HofX/ReflectivityAttenuated
+        channels: 1
+      maxvalue: 1.0e-9
+    action:
+      name: passivate
+  - filter: Perform Action
+    apply at iterations: 0,1,2
+    filter variables:
+    - name: ReflectivityAttenuated
+      channels: 1
+    where:
+    - variable:
+        name: DerivedVariables/ObsMinusHofX_dBZ
+        channels: 1
+      minvalue: 6.0
+    action:
+      name: passivate
+  - filter: Perform Action
+    apply at iterations: 0,1,2
+    filter variables:
+    - name: ReflectivityAttenuated
+      channels: 1
+    where:
+    - variable:
+        name: DerivedVariables/ObsMinusHofX_dBZ
+        channels: 1
+      maxvalue: -6.0
     action:
       name: passivate
 
